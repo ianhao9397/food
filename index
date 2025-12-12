@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今天吃什么</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-sec: #a0a0a0;
+            --accent: #ff9f1c;
+            --accent-hover: #ff7f00;
+            --highlight: #ffd700;
+            --tag-bg: #333;
+            --tag-active: #ff9f1c;
+            --blogger-color: #4CAF50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        header {
+            background-color: #000;
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.7);
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
+        p.subtitle { color: var(--text-sec); font-size: 0.95rem; margin-top: 8px; }
+        .header-emoji { font-size: 1.5rem; vertical-align: middle; margin-right: 10px; }
+
+        .filter-container {
+            background-color: #181818;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 10px;
+        }
+        .filter-group:last-child { border-bottom: none; }
+
+        .filter-label {
+            font-weight: bold;
+            color: var(--highlight);
+            min-width: 60px;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .filter-options { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; }
+
+        .check-btn { display: none; }
+        .check-label {
+            padding: 5px 12px;
+            background-color: var(--tag-bg);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            user-select: none;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+        }
+        .check-label:hover { background-color: #444; color: #fff; }
+        .check-btn:checked + .check-label {
+            background-color: var(--tag-active);
+            color: #121212;
+            border-color: var(--tag-active);
+            font-weight: bold;
+        }
+        .check-btn[name="blogger"]:checked + .check-label { background-color: var(--blogger-color); color: white; border-color: var(--blogger-color); }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 15px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        button.btn-random { background-color: var(--highlight); color: #121212; }
+        button.btn-random:hover { transform: scale(1.05); background-color: #ffb74d; }
+        button.btn-reset { background-color: transparent; border: 1px solid #666; color: var(--text-sec); }
+        button.btn-reset:hover { border-color: #aaa; color: #fff; background-color: #222; }
+
+        .status-bar { text-align: center; padding: 15px; color: var(--text-sec); font-size: 0.9rem; }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .recipe-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #333;
+            cursor: pointer;
+            position: relative;
+        }
+        .recipe-card:hover { transform: translateY(-8px); border-color: #555; box-shadow: 0 12px 20px rgba(0,0,0,0.6); }
+
+        .blogger-badge {
+            position: absolute;
+            top: 10px; right: 10px;
+            background-color: rgba(0,0,0,0.7);
+            color: var(--blogger-color);
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--blogger-color);
+        }
+
+        .card-header {
+            padding: 15px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, #252525, #1e1e1e);
+            margin-top: 20px;
+        }
+
+        .recipe-title { font-size: 1.15rem; font-weight: bold; color: #fff; }
+        .recipe-time { font-size: 0.85rem; color: var(--highlight); font-weight: bold; }
+        .card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
+        .tags-row { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
+        
+        .meta-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; background-color: #333; color: #ccc; }
+        .tag-cuisine { color: #ffab91; border: 1px solid #4e2c25; }
+
+        .ingredient-preview {
+            font-size: 0.85rem; color: #888; margin-bottom: 10px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; background: #141414; padding: 8px; border-radius: 6px;
+        }
+        .desc {
+            font-size: 0.9rem; color: #ddd;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; margin-top: auto;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 20px;
+        }
+        .modal-content {
+            background: #222; border-radius: 16px; max-width: 600px; width: 100%;
+            max-height: 85vh; overflow-y: auto; border: 1px solid #444;
+            box-shadow: 0 0 40px rgba(255, 159, 28, 0.2); animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .modal-header {
+            padding: 20px; background: linear-gradient(135deg, #2c1a16 0%, #1a1a1a 100%);
+            border-bottom: 1px solid #333;
+        }
+        .modal-blogger { color: var(--blogger-color); font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 5px; }
+        .modal-title { font-size: 1.6rem; color: var(--highlight); margin: 0; display: inline-block;}
+        .modal-emoji { font-size: 2rem; vertical-align: middle; margin-right: 10px; }
+        .modal-body { padding: 25px; }
+
+        .section-title {
+            color: var(--accent); font-size: 1.1rem; font-weight: bold; margin: 25px 0 10px 0;
+            border-left: 4px solid var(--accent); padding-left: 10px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+        .ing-item { background: #333; padding: 8px; border-radius: 4px; font-size: 0.9rem; text-align: center; border: 1px solid #444; }
+
+        .step-item { margin-bottom: 15px; color: #ddd; font-size: 1rem; display: flex; }
+        .step-num {
+            min-width: 24px; height: 24px; background: var(--accent); color: #000;
+            border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold;
+            font-size: 0.8rem; margin-right: 10px; margin-top: 2px;
+        }
+
+        .modal-actions {
+            padding: 20px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 15px;
+        }
+        .btn-full { flex: 1; }
+        .btn-close { background-color: #333; color: white; }
+        .btn-cook { background-color: var(--accent); color: #121212; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><span class="header-emoji">🍳</span>今天吃什么 v2.1</h1>
+    <p class="subtitle">私房菜谱库 | 数据已分离</p>
+</header>
+
+<div class="filter-container">
+    <div class="filter-group">
+        <span class="filter-label">菜系:</span>
+        <div class="filter-options" id="filter-cuisine"></div>
+    </div>
+
+    <div class="filter-group">
+        <span class="filter-label">博主:</span>
+        <div class="filter-options" id="filter-blogger"></div>
+    </div>
+
+    <div class="filter-group">
+        <span class="filter-label">食材:</span>
+        <div class="filter-options">
+            <input type="checkbox" id="ing1" name="ingredient" value="猪肉" class="check-btn" onchange="applyFilters()"><label for="ing1" class="check-label">🐷 猪肉</label>
+            <input type="checkbox" id="ing2" name="ingredient" value="鸡" class="check-btn" onchange="applyFilters()"><label for="ing2" class="check-label">🐔 鸡肉</label>
+            <input type="checkbox" id="ing3" name="ingredient" value="牛" class="check-btn" onchange="applyFilters()"><label for="ing3" class="check-label">🐮 牛肉</label>
+            <input type="checkbox" id="ing4" name="ingredient" value="鱼" class="check-btn" onchange="applyFilters()"><label for="ing4" class="check-label">🐟 鱼/海鲜</label>
+            <input type="checkbox" id="ing5" name="ingredient" value="蛋" class="check-btn" onchange="applyFilters()"><label for="ing5" class="check-label">🥚 鸡蛋</label>
+            <input type="checkbox" id="ing6" name="ingredient" value="豆腐" class="check-btn" onchange="applyFilters()"><label for="ing6" class="check-label">🧊 豆腐</label>
+            <input type="checkbox" id="ing7" name="ingredient" value="土豆" class="check-btn" onchange="applyFilters()"><label for="ing7" class="check-label">🥔 土豆</label>
+            <input type="checkbox" id="ing8" name="ingredient" value="茄子" class="check-btn" onchange="applyFilters()"><label for="ing8" class="check-label">🍆 茄子</label>
+            <input type="checkbox" id="ing9" name="ingredient" value="青菜" class="check-btn" onchange="applyFilters()"><label for="ing9" class="check-label">🥬 青菜</label>
+        </div>
+    </div>
+
+    <div class="filter-group">
+        <span class="filter-label">标签:</span>
+        <div class="filter-options">
+            <input type="checkbox" id="t1" name="tag" value="简单" class="check-btn" onchange="applyFilters()"><label for="t1" class="check-label">👌 简单</label>
+            <input type="checkbox" id="t2" name="tag" value="快手" class="check-btn" onchange="applyFilters()"><label for="t2" class="check-label">⚡ 快手</label>
+            <input type="checkbox" id="t3" name="tag" value="辣" class="check-btn" onchange="applyFilters()"><label for="t3" class="check-label">🌶️ 辣味</label>
+            <input type="checkbox" id="t4" name="tag" value="硬菜" class="check-btn" onchange="applyFilters()"><label for="t4" class="check-label">🦁 硬菜</label>
+            <input type="checkbox" id="t5" name="tag" value="汤" class="check-btn" onchange="applyFilters()"><label for="t5" class="check-label">🥣 汤羹</label>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn-reset" onclick="resetFilters()">↺ 重置条件</button>
+        <button class="btn-random" onclick="helpMeChoose()">🎲 帮我选一道！</button>
+    </div>
+</div>
+
+<div class="status-bar" id="statusBar">加载中...</div>
+<div class="movie-grid" id="recipeGrid"></div>
+
+<div class="modal-overlay" id="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-blogger" id="modalBlogger"></span>
+            <span class="modal-emoji" id="modalIcon"></span>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div style="color: #888; margin-top:5px;" id="modalMeta"></div>
+        </div>
+        <div class="modal-body">
+            <div class="section-title">📝 简介</div>
+            <div style="color:#ccc; line-height:1.5;" id="modalDesc"></div>
+            <div class="section-title">🛒 食材清单</div>
+            <div class="ingredient-grid" id="modalIngredients"></div>
+            <div class="section-title">🍳 烹饪步骤</div>
+            <div id="modalSteps"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-full btn-close" onclick="closeModal()">关闭</button>
+            <button class="btn-full btn-cook" id="btnSearch">🎬 搜视频教程</button>
+        </div>
+    </div>
+</div>
+
+<script src="recipes.js"></script>
+
+<script>
+    let currentList = [];
+
+    window.onload = () => {
+        // 检查 recipes.js 是否加载成功
+        if (typeof allRecipes === 'undefined') {
+            document.getElementById('statusBar').innerText = "错误：找不到 recipes.js 文件，请确保它和 index.html 在同一目录！";
+            return;
+        }
+
+        currentList = [...allRecipes];
+        initDynamicFilters(); 
+        applyFilters();
+    };
+
+    function initDynamicFilters() {
+        const cuisines = [...new Set(allRecipes.map(r => r.cuisine))];
+        generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
+
+        const bloggers = [...new Set(allRecipes.map(r => r.blogger))];
+        generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
+    }
+
+    function generateCheckboxGroup(containerId, name, values) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; 
+        values.forEach((val, index) => {
+            const id = `${name}-${index}`;
+            const labelText = name === 'blogger' ? `👨‍🍳 ${val}` : val;
+            const html = `
+                <input type="checkbox" id="${id}" name="${name}" value="${val}" class="check-btn" onchange="applyFilters()">
+                <label for="${id}" class="check-label">${labelText}</label>
+            `;
+            container.innerHTML += html;
+        });
+    }
+
+    function getSelectedValues(name) {
+        return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
+    }
+
+    function applyFilters() {
+        const selCuisines = getSelectedValues('cuisine');
+        const selBloggers = getSelectedValues('blogger');
+        const selIngredients = getSelectedValues('ingredient');
+        const selTags = getSelectedValues('tag');
+
+        currentList = allRecipes.filter(item => {
+            const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
+            const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
+            const ingMatch = selIngredients.length === 0 || selIngredients.some(ing => item.ingredients.includes(ing));
+            const tagMatch = selTags.length === 0 || selTags.some(t => {
+                const inTags = item.tags && item.tags.includes(t);
+                const inType = item.type && item.type.includes(t);
+                return inTags || inType;
+            });
+            return cuisineMatch && bloggerMatch && ingMatch && tagMatch;
+        });
+
+        document.getElementById('statusBar').innerText = `😋 找到 ${currentList.length} 道符合口味的菜`;
+        renderRecipes(currentList);
+    }
+
+    function renderRecipes(list) {
+        const grid = document.getElementById('recipeGrid');
+        grid.innerHTML = "";
+
+        if (list.length === 0) {
+            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#666;"><h3>👻 哎呀，没找到...</h3><p>尝试减少一些筛选条件？</p></div>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'recipe-card';
+            card.onclick = () => showDetails(item);
+
+            let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine}</span>`;
+            if(item.tags) item.tags.forEach(t => tagsHtml += `<span class="meta-tag">${t}</span>`);
+
+            card.innerHTML = `
+                <div class="blogger-badge">👨‍🍳 ${item.blogger}</div>
+                <div class="card-header">
+                    <span class="recipe-title">${item.icon} ${item.name}</span>
+                    <span class="recipe-time">⏰ ${item.time}</span>
+                </div>
+                <div class="card-body">
+                    <div class="tags-row">${tagsHtml}</div>
+                    <div class="ingredient-preview"><strong>🛒 食材:</strong> ${item.ingredients}</div>
+                    <p class="desc">${item.desc}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function showDetails(item) {
+        const modal = document.getElementById('modal');
+        document.getElementById('modalIcon').innerText = item.icon;
+        document.getElementById('modalTitle').innerText = item.name;
+        document.getElementById('modalBlogger').innerText = `UP主：${item.blogger}`;
+        document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type} | ${item.time}`;
+        document.getElementById('modalDesc').innerText = item.desc;
+
+        const ingBox = document.getElementById('modalIngredients');
+        ingBox.innerHTML = '';
+        const ings = item.ingredients.split(/,|，/);
+        ings.forEach(ing => {
+            if(ing.trim()){
+                const div = document.createElement('div');
+                div.className = 'ing-item';
+                div.innerText = ing.trim();
+                ingBox.appendChild(div);
+            }
+        });
+
+        const stepBox = document.getElementById('modalSteps');
+        stepBox.innerHTML = '';
+        const steps = item.steps.split('\n');
+        steps.forEach((step, idx) => {
+            if(step.trim()) {
+                const div = document.createElement('div');
+                div.className = 'step-item';
+                div.innerHTML = `<div class="step-num">${idx+1}</div><div>${step.replace(/^\d+\./, '').trim()}</div>`;
+                stepBox.appendChild(div);
+            }
+        });
+
+        document.getElementById('btnSearch').onclick = () => {
+            window.open(`https://www.bilibili.com/search?keyword=${encodeURIComponent(item.name + ' ' + item.blogger)}`, '_blank');
+        };
+
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    function resetFilters() { document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); applyFilters(); }
+    function helpMeChoose() {
+        if(currentList.length === 0) { alert('列表为空，无法随机'); return; }
+        const r = currentList[Math.floor(Math.random() * currentList.length)];
+        showDetails(r);
+    }
+    window.onclick = (e) => { if(e.target == document.getElementById('modal')) closeModal(); }
+</script>
+
+</body>
+</html>
