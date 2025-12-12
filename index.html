@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>今天吃什么</title>
+    <title>今天吃什么 - 智能菜谱库</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -64,7 +64,7 @@
         .filter-label {
             font-weight: bold;
             color: var(--highlight);
-            min-width: 70px; /*稍微加宽以容纳"热门食材"*/
+            min-width: 70px;
             font-size: 0.95rem;
             margin-top: 8px;
         }
@@ -274,9 +274,21 @@
     </div>
 
     <div class="filter-group">
-        <span class="filter-label">热门食材:</span>
+        <span class="filter-label">食材:</span>
         <div class="filter-options" id="filter-ingredient">
-            </div>
+            <input type="checkbox" id="i1" name="ingredient" value="猪肉" class="check-btn" onchange="applyFilters()"><label for="i1" class="check-label">🐷 猪肉</label>
+            <input type="checkbox" id="i2" name="ingredient" value="鸡" class="check-btn" onchange="applyFilters()"><label for="i2" class="check-label">🐔 鸡肉</label>
+            <input type="checkbox" id="i3" name="ingredient" value="牛" class="check-btn" onchange="applyFilters()"><label for="i3" class="check-label">🐮 牛肉</label>
+            <input type="checkbox" id="i4" name="ingredient" value="羊" class="check-btn" onchange="applyFilters()"><label for="i4" class="check-label">🐑 羊肉</label>
+            <input type="checkbox" id="i5" name="ingredient" value="鱼" class="check-btn" onchange="applyFilters()"><label for="i5" class="check-label">🐟 鱼/海鲜</label>
+            <input type="checkbox" id="i6" name="ingredient" value="虾" class="check-btn" onchange="applyFilters()"><label for="i6" class="check-label">🦐 虾/蟹</label>
+            <input type="checkbox" id="i7" name="ingredient" value="蛋" class="check-btn" onchange="applyFilters()"><label for="i7" class="check-label">🥚 鸡蛋</label>
+            <input type="checkbox" id="i8" name="ingredient" value="豆腐" class="check-btn" onchange="applyFilters()"><label for="i8" class="check-label">🧊 豆腐</label>
+            <input type="checkbox" id="i9" name="ingredient" value="土豆" class="check-btn" onchange="applyFilters()"><label for="i9" class="check-label">🥔 土豆</label>
+            <input type="checkbox" id="i10" name="ingredient" value="番茄" class="check-btn" onchange="applyFilters()"><label for="i10" class="check-label">🍅 番茄</label>
+            <input type="checkbox" id="i11" name="ingredient" value="青菜" class="check-btn" onchange="applyFilters()"><label for="i11" class="check-label">🥬 青菜</label>
+            <input type="checkbox" id="i12" name="ingredient" value="面" class="check-btn" onchange="applyFilters()"><label for="i12" class="check-label">🍜 面/粉</label>
+        </div>
     </div>
 
     <div class="filter-group">
@@ -340,41 +352,15 @@
     };
 
     function initDynamicFilters() {
-        // 1. 生成菜系
+        // 1. 生成菜系 (动态)
         const cuisines = [...new Set(allRecipes.map(r => r.cuisine))];
         generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
 
-        // 2. 生成博主
+        // 2. 生成博主 (动态)
         const bloggers = [...new Set(allRecipes.map(r => r.blogger))];
         generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
-
-        // 3. 生成热门食材 (Top 20)
-        generateTopIngredients();
-    }
-
-    // 统计所有菜谱中出现频率最高的20种食材
-    function generateTopIngredients() {
-        const ingredientCount = {};
         
-        allRecipes.forEach(recipe => {
-            // 分割字符串 (支持中英文逗号)
-            const list = recipe.ingredients.split(/,|，/);
-            list.forEach(ing => {
-                // 清洗数据：去掉空格，去掉括号内的备注 (例如 "猪肉(里脊)" -> "猪肉")
-                let cleanName = ing.trim().replace(/\(.*\)/, ''); 
-                if (cleanName) {
-                    ingredientCount[cleanName] = (ingredientCount[cleanName] || 0) + 1;
-                }
-            });
-        });
-
-        // 转换为数组并排序：[[猪肉, 10], [鸡蛋, 8], ...] -> 取前20 -> 只保留名称
-        const sortedIngs = Object.entries(ingredientCount)
-            .sort((a, b) => b[1] - a[1]) // 按频率降序
-            .slice(0, 20)
-            .map(entry => entry[0]);
-
-        generateCheckboxGroup('filter-ingredient', 'ingredient', sortedIngs);
+        // 注意：食材现在是 HTML 里写死的，不再动态生成
     }
 
     function generateCheckboxGroup(containerId, name, values) {
@@ -396,29 +382,29 @@
     }
 
     function applyFilters() {
-        // 1. 获取输入框的值
+        // 1. 获取输入框
         const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
 
-        // 2. 获取Checkbox的值
+        // 2. 获取复选框
         const selCuisines = getSelectedValues('cuisine');
         const selBloggers = getSelectedValues('blogger');
-        const selIngredients = getSelectedValues('ingredient'); // 热门食材
-        const selDifficulty = getSelectedValues('difficulty'); // 难度(时间)
+        const selIngredients = getSelectedValues('ingredient'); // 获取手动选中的食材
+        const selDifficulty = getSelectedValues('difficulty');
 
         currentList = allRecipes.filter(item => {
-            // 文本搜索 (菜名 或 食材文本)
+            // 文本搜索
             const textMatch = !searchText || 
                               item.name.toLowerCase().includes(searchText) || 
                               item.ingredients.toLowerCase().includes(searchText);
 
-            // 菜系 & 博主 (精确匹配)
+            // 菜系 & 博主
             const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
             const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
             
-            // 食材筛选 (模糊匹配，只要包含任意一个选中的热门食材)
+            // 食材筛选 (只要包含任意一个选中的食材)
             const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients.includes(selIng));
 
-            // 难度筛选 (解析时间数字)
+            // 难度筛选
             const timeMatch = selDifficulty.length === 0 || checkTimeDifficulty(item.time, selDifficulty);
 
             return textMatch && cuisineMatch && bloggerMatch && ingMatch && timeMatch;
@@ -428,9 +414,8 @@
         renderRecipes(currentList);
     }
 
-    // 辅助函数：解析时间并判断是否在难度区间内
+    // 解析时间 (例如 "90分钟" -> 90) 并匹配范围
     function checkTimeDifficulty(timeStr, ranges) {
-        // 从 "20分钟" 提取 20
         const minutes = parseInt(timeStr); 
         if (isNaN(minutes)) return false;
 
@@ -461,7 +446,6 @@
             card.onclick = () => showDetails(item);
 
             let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine}</span>`;
-            // 显示原有tags (如果有)
             if(item.tags) item.tags.forEach(t => tagsHtml += `<span class="meta-tag">${t}</span>`);
 
             card.innerHTML = `
