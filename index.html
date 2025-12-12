@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>今天吃什么 - 智能菜谱库</title>
+    <title>今天吃什么</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -244,13 +244,48 @@
         .btn-close { background-color: #333; color: white; }
         .btn-cook { background-color: #FF0000; color: #fff; } 
         .btn-cook:hover { background-color: #cc0000; }
+
+
+        /* --- 新增：头部按钮样式 --- */
+.header-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-text {
+    background-color: transparent;
+    border: 1px solid #444;
+    color: #888;
+    font-size: 0.85rem;
+    padding: 6px 15px;
+    border-radius: 20px; /* 圆角设计，更像胶囊按钮 */
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-text:hover {
+    border-color: var(--accent); /* 悬停变成主题色(橙色) */
+    color: var(--accent);
+    background-color: rgba(255, 159, 28, 0.1);
+}
+        
     </style>
 </head>
 <body>
 
 <header>
     <h1><span class="header-emoji">🍳</span>今天吃什么</h1>
-    <p class="subtitle">私房菜谱库 | 支持搜索 & YouTube</p>
+    
+<div class="header-actions">
+        <button class="btn-text" onclick="shareToFriends()">📤 分享给朋友</button>
+        <button class="btn-text" onclick="contactAuthor()">💬 反馈给作者</button>
+    </div>
+
 </header>
 
 <div class="filter-container">
@@ -503,6 +538,9 @@
         const r = currentList[Math.floor(Math.random() * currentList.length)];
         showDetails(r);
     }
+
+  
+    
     window.onclick = (e) => { if(e.target == document.getElementById('modal')) closeModal(); }
 </script>
 
