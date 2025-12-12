@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>今天吃什么</title>
+    <title>今天吃什么 - 智能菜谱库</title>
     <style>
         :root {
             --bg-color: #121212;
@@ -43,6 +43,34 @@
         h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
         p.subtitle { color: var(--text-sec); font-size: 0.95rem; margin-top: 8px; }
         .header-emoji { font-size: 1.5rem; vertical-align: middle; margin-right: 10px; }
+
+        /* 头部功能按钮 */
+        .header-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-text {
+            background-color: transparent;
+            border: 1px solid #444;
+            color: #888;
+            font-size: 0.85rem;
+            padding: 6px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-text:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background-color: rgba(255, 159, 28, 0.1);
+        }
 
         /* Filter Section */
         .filter-container {
@@ -242,50 +270,30 @@
         }
         .btn-full { flex: 1; }
         .btn-close { background-color: #333; color: white; }
+        
+        /* 弹窗内再选一次按钮样式 */
+        .btn-reroll {
+            background-color: var(--highlight);
+            color: #121212;
+        }
+        .btn-reroll:hover {
+            background-color: #ffb74d;
+        }
+
         .btn-cook { background-color: #FF0000; color: #fff; } 
         .btn-cook:hover { background-color: #cc0000; }
-
-
-        /* --- 新增：头部按钮样式 --- */
-.header-actions {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.btn-text {
-    background-color: transparent;
-    border: 1px solid #444;
-    color: #888;
-    font-size: 0.85rem;
-    padding: 6px 15px;
-    border-radius: 20px; /* 圆角设计，更像胶囊按钮 */
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.btn-text:hover {
-    border-color: var(--accent); /* 悬停变成主题色(橙色) */
-    color: var(--accent);
-    background-color: rgba(255, 159, 28, 0.1);
-}
-        
     </style>
 </head>
 <body>
 
 <header>
     <h1><span class="header-emoji">🍳</span>今天吃什么</h1>
+    <p class="subtitle">私房菜谱库 | 支持搜索 & YouTube</p>
     
-<div class="header-actions">
+    <div class="header-actions">
         <button class="btn-text" onclick="shareToFriends()">📤 分享给朋友</button>
         <button class="btn-text" onclick="contactAuthor()">💬 反馈给作者</button>
     </div>
-
 </header>
 
 <div class="filter-container">
@@ -298,14 +306,12 @@
 
     <div class="filter-group">
         <span class="filter-label">菜系:</span>
-        <div class="filter-options" id="filter-cuisine">
-            </div>
+        <div class="filter-options" id="filter-cuisine"></div>
     </div>
 
     <div class="filter-group">
         <span class="filter-label">博主:</span>
-        <div class="filter-options" id="filter-blogger">
-            </div>
+        <div class="filter-options" id="filter-blogger"></div>
     </div>
 
     <div class="filter-group">
@@ -362,9 +368,10 @@
             <div style="color:#ccc; line-height:1.5;" id="modalDesc"></div>
             <div class="section-title">🛒 食材清单</div>
             <div class="ingredient-grid" id="modalIngredients"></div>
-            </div>
+        </div>
         <div class="modal-actions">
             <button class="btn-full btn-close" onclick="closeModal()">关闭</button>
+            <button class="btn-full btn-reroll" onclick="helpMeChoose()">🎲 再选一次</button>
             <button class="btn-full btn-cook" id="btnSearch">📺 YouTube 教程</button>
         </div>
     </div>
@@ -387,15 +394,15 @@
     };
 
     function initDynamicFilters() {
-        // 1. 生成菜系 (动态)
-        const cuisines = [...new Set(allRecipes.map(r => r.cuisine))];
+        // 1. 生成菜系 (filter(c=>c) 过滤空值)
+        const cuisines = [...new Set(allRecipes.map(r => r.cuisine).filter(c => c))];
         generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
 
-        // 2. 生成博主 (动态)
-        const bloggers = [...new Set(allRecipes.map(r => r.blogger))];
+        // 2. 生成博主 (filter(b=>b) 修复undefined问题)
+        const bloggers = [...new Set(allRecipes.map(r => r.blogger).filter(b => b))];
         generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
         
-        // 注意：食材现在是 HTML 里写死的，不再动态生成
+        // 食材部分为HTML固定内容
     }
 
     function generateCheckboxGroup(containerId, name, values) {
@@ -423,21 +430,21 @@
         // 2. 获取复选框
         const selCuisines = getSelectedValues('cuisine');
         const selBloggers = getSelectedValues('blogger');
-        const selIngredients = getSelectedValues('ingredient'); // 获取手动选中的食材
+        const selIngredients = getSelectedValues('ingredient');
         const selDifficulty = getSelectedValues('difficulty');
 
         currentList = allRecipes.filter(item => {
             // 文本搜索
             const textMatch = !searchText || 
-                              item.name.toLowerCase().includes(searchText) || 
-                              item.ingredients.toLowerCase().includes(searchText);
+                              (item.name && item.name.toLowerCase().includes(searchText)) || 
+                              (item.ingredients && item.ingredients.toLowerCase().includes(searchText));
 
             // 菜系 & 博主
             const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
             const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
             
-            // 食材筛选 (只要包含任意一个选中的食材)
-            const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients.includes(selIng));
+            // 食材筛选
+            const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients && item.ingredients.includes(selIng));
 
             // 难度筛选
             const timeMatch = selDifficulty.length === 0 || checkTimeDifficulty(item.time, selDifficulty);
@@ -451,6 +458,7 @@
 
     // 解析时间 (例如 "90分钟" -> 90) 并匹配范围
     function checkTimeDifficulty(timeStr, ranges) {
+        if (!timeStr) return false;
         const minutes = parseInt(timeStr); 
         if (isNaN(minutes)) return false;
 
@@ -480,19 +488,19 @@
             card.className = 'recipe-card';
             card.onclick = () => showDetails(item);
 
-            let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine}</span>`;
+            let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine || '美味'}</span>`;
             if(item.tags) item.tags.forEach(t => tagsHtml += `<span class="meta-tag">${t}</span>`);
 
             card.innerHTML = `
                 <div class="blogger-badge">👨‍🍳 ${item.blogger}</div>
                 <div class="card-header">
-                    <span class="recipe-title">${item.icon} ${item.name}</span>
+                    <span class="recipe-title">${item.icon || '🥘'} ${item.name}</span>
                     <span class="recipe-time">⏰ ${item.time}</span>
                 </div>
                 <div class="card-body">
                     <div class="tags-row">${tagsHtml}</div>
-                    <div class="ingredient-preview"><strong>🛒 食材:</strong> ${item.ingredients}</div>
-                    <p class="desc">${item.desc}</p>
+                    <div class="ingredient-preview"><strong>🛒 食材:</strong> ${item.ingredients || '见详情'}</div>
+                    <p class="desc">${item.desc || '暂无简介'}</p>
                 </div>
             `;
             grid.appendChild(card);
@@ -501,23 +509,25 @@
 
     function showDetails(item) {
         const modal = document.getElementById('modal');
-        document.getElementById('modalIcon').innerText = item.icon;
+        document.getElementById('modalIcon').innerText = item.icon || '🥘';
         document.getElementById('modalTitle').innerText = item.name;
         document.getElementById('modalBlogger').innerText = `UP主：${item.blogger}`;
-        document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type} | ${item.time}`;
-        document.getElementById('modalDesc').innerText = item.desc;
+        document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type || '热菜'} | ${item.time}`;
+        document.getElementById('modalDesc').innerText = item.desc || '暂无简介';
 
         const ingBox = document.getElementById('modalIngredients');
         ingBox.innerHTML = '';
-        const ings = item.ingredients.split(/,|，/);
-        ings.forEach(ing => {
-            if(ing.trim()){
-                const div = document.createElement('div');
-                div.className = 'ing-item';
-                div.innerText = ing.trim();
-                ingBox.appendChild(div);
-            }
-        });
+        if(item.ingredients) {
+            const ings = item.ingredients.split(/,|，/);
+            ings.forEach(ing => {
+                if(ing.trim()){
+                    const div = document.createElement('div');
+                    div.className = 'ing-item';
+                    div.innerText = ing.trim();
+                    ingBox.appendChild(div);
+                }
+            });
+        }
 
         document.getElementById('btnSearch').onclick = () => {
             const query = `${item.name} ${item.blogger} recipe`;
@@ -528,19 +538,41 @@
     }
 
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    
     function resetFilters() { 
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
         document.getElementById('searchInput').value = ""; 
         applyFilters(); 
     }
+    
     function helpMeChoose() {
         if(currentList.length === 0) { alert('列表为空，无法随机'); return; }
         const r = currentList[Math.floor(Math.random() * currentList.length)];
         showDetails(r);
     }
 
-  
-    
+    // --- 头部按钮功能 ---
+    function shareToFriends() {
+        if (navigator.share) {
+            navigator.share({
+                title: '今天吃什么 - 智能菜谱库',
+                text: '不知道吃什么？来这里看看！',
+                url: window.location.href
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('🔗 链接已复制到剪贴板，快去发给朋友吧！');
+            }).catch(() => {
+                alert('❌ 复制失败，请手动复制浏览器地址栏');
+            });
+        }
+    }
+
+    function contactAuthor() {
+        // 这里的逻辑已修改为弹出微博信息
+        alert("联系微博@ian233");
+    }
+
     window.onclick = (e) => { if(e.target == document.getElementById('modal')) closeModal(); }
 </script>
 
