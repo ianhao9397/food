@@ -54,7 +54,7 @@
         .filter-group {
             margin-bottom: 15px;
             display: flex;
-            align-items: flex-start; /* 改为顶部对齐，适应搜索框 */
+            align-items: flex-start;
             gap: 15px;
             border-bottom: 1px dashed #333;
             padding-bottom: 10px;
@@ -64,14 +64,13 @@
         .filter-label {
             font-weight: bold;
             color: var(--highlight);
-            min-width: 60px;
+            min-width: 70px; /*稍微加宽以容纳"热门食材"*/
             font-size: 0.95rem;
-            margin-top: 8px; /* 微调对齐 */
+            margin-top: 8px;
         }
 
         .filter-options { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; align-items: center; }
 
-        /* --- 新增：搜索框样式 --- */
         .search-input {
             background-color: #333;
             border: 1px solid #444;
@@ -104,13 +103,20 @@
             align-items: center;
         }
         .check-label:hover { background-color: #444; color: #fff; }
+        
+        /* 选中状态 */
         .check-btn:checked + .check-label {
             background-color: var(--tag-active);
             color: #121212;
             border-color: var(--tag-active);
             font-weight: bold;
         }
-        .check-btn[name="blogger"]:checked + .check-label { background-color: var(--blogger-color); color: white; border-color: var(--blogger-color); }
+        /* 博主特殊颜色 */
+        .check-btn[name="blogger"]:checked + .check-label { 
+            background-color: var(--blogger-color); 
+            color: white; 
+            border-color: var(--blogger-color); 
+        }
 
         .action-bar {
             display: flex;
@@ -231,15 +237,12 @@
         .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
         .ing-item { background: #333; padding: 8px; border-radius: 4px; font-size: 0.9rem; text-align: center; border: 1px solid #444; }
 
-        /* 步骤样式保留但隐藏，如果未来想加回可以恢复 */
-        /* .step-item { ... } */
-
         .modal-actions {
             padding: 20px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 15px;
         }
         .btn-full { flex: 1; }
         .btn-close { background-color: #333; color: white; }
-        .btn-cook { background-color: #FF0000; color: #fff; } /* YouTube Red */
+        .btn-cook { background-color: #FF0000; color: #fff; } 
         .btn-cook:hover { background-color: #cc0000; }
     </style>
 </head>
@@ -251,7 +254,6 @@
 </header>
 
 <div class="filter-container">
-    
     <div class="filter-group">
         <span class="filter-label">搜索:</span>
         <div class="filter-options">
@@ -261,37 +263,33 @@
 
     <div class="filter-group">
         <span class="filter-label">菜系:</span>
-        <div class="filter-options" id="filter-cuisine"></div>
+        <div class="filter-options" id="filter-cuisine">
+            </div>
     </div>
 
     <div class="filter-group">
         <span class="filter-label">博主:</span>
-        <div class="filter-options" id="filter-blogger"></div>
+        <div class="filter-options" id="filter-blogger">
+            </div>
     </div>
 
     <div class="filter-group">
-        <span class="filter-label">食材:</span>
-        <div class="filter-options">
-            <input type="checkbox" id="ing1" name="ingredient" value="猪肉" class="check-btn" onchange="applyFilters()"><label for="ing1" class="check-label">🐷 猪肉</label>
-            <input type="checkbox" id="ing2" name="ingredient" value="鸡" class="check-btn" onchange="applyFilters()"><label for="ing2" class="check-label">🐔 鸡肉</label>
-            <input type="checkbox" id="ing3" name="ingredient" value="牛" class="check-btn" onchange="applyFilters()"><label for="ing3" class="check-label">🐮 牛肉</label>
-            <input type="checkbox" id="ing4" name="ingredient" value="鱼" class="check-btn" onchange="applyFilters()"><label for="ing4" class="check-label">🐟 鱼/海鲜</label>
-            <input type="checkbox" id="ing5" name="ingredient" value="蛋" class="check-btn" onchange="applyFilters()"><label for="ing5" class="check-label">🥚 鸡蛋</label>
-            <input type="checkbox" id="ing6" name="ingredient" value="豆腐" class="check-btn" onchange="applyFilters()"><label for="ing6" class="check-label">🧊 豆腐</label>
-            <input type="checkbox" id="ing7" name="ingredient" value="土豆" class="check-btn" onchange="applyFilters()"><label for="ing7" class="check-label">🥔 土豆</label>
-            <input type="checkbox" id="ing8" name="ingredient" value="茄子" class="check-btn" onchange="applyFilters()"><label for="ing8" class="check-label">🍆 茄子</label>
-            <input type="checkbox" id="ing9" name="ingredient" value="青菜" class="check-btn" onchange="applyFilters()"><label for="ing9" class="check-label">🥬 青菜</label>
-        </div>
+        <span class="filter-label">热门食材:</span>
+        <div class="filter-options" id="filter-ingredient">
+            </div>
     </div>
 
     <div class="filter-group">
-        <span class="filter-label">标签:</span>
+        <span class="filter-label">难度:</span>
         <div class="filter-options">
-            <input type="checkbox" id="t1" name="tag" value="简单" class="check-btn" onchange="applyFilters()"><label for="t1" class="check-label">👌 简单</label>
-            <input type="checkbox" id="t2" name="tag" value="快手" class="check-btn" onchange="applyFilters()"><label for="t2" class="check-label">⚡ 快手</label>
-            <input type="checkbox" id="t3" name="tag" value="辣" class="check-btn" onchange="applyFilters()"><label for="t3" class="check-label">🌶️ 辣味</label>
-            <input type="checkbox" id="t4" name="tag" value="硬菜" class="check-btn" onchange="applyFilters()"><label for="t4" class="check-label">🦁 硬菜</label>
-            <input type="checkbox" id="t5" name="tag" value="汤" class="check-btn" onchange="applyFilters()"><label for="t5" class="check-label">🥣 汤羹</label>
+            <input type="checkbox" id="d1" name="difficulty" value="0-20" class="check-btn" onchange="applyFilters()">
+            <label for="d1" class="check-label">⚡ 快手 (≤20分)</label>
+            
+            <input type="checkbox" id="d2" name="difficulty" value="21-60" class="check-btn" onchange="applyFilters()">
+            <label for="d2" class="check-label">👨‍🍳 进阶 (20-60分)</label>
+            
+            <input type="checkbox" id="d3" name="difficulty" value="61-999" class="check-btn" onchange="applyFilters()">
+            <label for="d3" class="check-label">🔥 大菜 (>60分)</label>
         </div>
     </div>
 
@@ -342,11 +340,41 @@
     };
 
     function initDynamicFilters() {
+        // 1. 生成菜系
         const cuisines = [...new Set(allRecipes.map(r => r.cuisine))];
         generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
 
+        // 2. 生成博主
         const bloggers = [...new Set(allRecipes.map(r => r.blogger))];
         generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
+
+        // 3. 生成热门食材 (Top 20)
+        generateTopIngredients();
+    }
+
+    // 统计所有菜谱中出现频率最高的20种食材
+    function generateTopIngredients() {
+        const ingredientCount = {};
+        
+        allRecipes.forEach(recipe => {
+            // 分割字符串 (支持中英文逗号)
+            const list = recipe.ingredients.split(/,|，/);
+            list.forEach(ing => {
+                // 清洗数据：去掉空格，去掉括号内的备注 (例如 "猪肉(里脊)" -> "猪肉")
+                let cleanName = ing.trim().replace(/\(.*\)/, ''); 
+                if (cleanName) {
+                    ingredientCount[cleanName] = (ingredientCount[cleanName] || 0) + 1;
+                }
+            });
+        });
+
+        // 转换为数组并排序：[[猪肉, 10], [鸡蛋, 8], ...] -> 取前20 -> 只保留名称
+        const sortedIngs = Object.entries(ingredientCount)
+            .sort((a, b) => b[1] - a[1]) // 按频率降序
+            .slice(0, 20)
+            .map(entry => entry[0]);
+
+        generateCheckboxGroup('filter-ingredient', 'ingredient', sortedIngs);
     }
 
     function generateCheckboxGroup(containerId, name, values) {
@@ -368,35 +396,54 @@
     }
 
     function applyFilters() {
-        // 1. 获取输入框的值 (转小写，去空格)
+        // 1. 获取输入框的值
         const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
 
         // 2. 获取Checkbox的值
         const selCuisines = getSelectedValues('cuisine');
         const selBloggers = getSelectedValues('blogger');
-        const selIngredients = getSelectedValues('ingredient');
-        const selTags = getSelectedValues('tag');
+        const selIngredients = getSelectedValues('ingredient'); // 热门食材
+        const selDifficulty = getSelectedValues('difficulty'); // 难度(时间)
 
         currentList = allRecipes.filter(item => {
-            // 文本搜索匹配 (匹配菜名 或 食材)
+            // 文本搜索 (菜名 或 食材文本)
             const textMatch = !searchText || 
                               item.name.toLowerCase().includes(searchText) || 
                               item.ingredients.toLowerCase().includes(searchText);
 
+            // 菜系 & 博主 (精确匹配)
             const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
             const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
-            const ingMatch = selIngredients.length === 0 || selIngredients.some(ing => item.ingredients.includes(ing));
-            const tagMatch = selTags.length === 0 || selTags.some(t => {
-                const inTags = item.tags && item.tags.includes(t);
-                const inType = item.type && item.type.includes(t);
-                return inTags || inType;
-            });
+            
+            // 食材筛选 (模糊匹配，只要包含任意一个选中的热门食材)
+            const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients.includes(selIng));
 
-            return textMatch && cuisineMatch && bloggerMatch && ingMatch && tagMatch;
+            // 难度筛选 (解析时间数字)
+            const timeMatch = selDifficulty.length === 0 || checkTimeDifficulty(item.time, selDifficulty);
+
+            return textMatch && cuisineMatch && bloggerMatch && ingMatch && timeMatch;
         });
 
-        document.getElementById('statusBar').innerText = `😋 找到 ${currentList.length} 道符合口味的菜`;
+        updateStatusBar(currentList.length);
         renderRecipes(currentList);
+    }
+
+    // 辅助函数：解析时间并判断是否在难度区间内
+    function checkTimeDifficulty(timeStr, ranges) {
+        // 从 "20分钟" 提取 20
+        const minutes = parseInt(timeStr); 
+        if (isNaN(minutes)) return false;
+
+        return ranges.some(range => {
+            const [min, max] = range.split('-').map(Number);
+            return minutes >= min && minutes <= max;
+        });
+    }
+
+    function updateStatusBar(count) {
+        const bar = document.getElementById('statusBar');
+        if (count === 0) bar.innerText = "👻 哎呀，没找到... 试着减少点筛选条件？";
+        else bar.innerText = `😋 找到 ${count} 道符合口味的菜`;
     }
 
     function renderRecipes(list) {
@@ -404,7 +451,7 @@
         grid.innerHTML = "";
 
         if (list.length === 0) {
-            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#666;"><h3>👻 哎呀，没找到...</h3><p>试试换个关键词或减少筛选条件？</p></div>`;
+            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#666;"><h3>空空如也</h3><p>没有找到匹配的菜谱</p></div>`;
             return;
         }
 
@@ -414,6 +461,7 @@
             card.onclick = () => showDetails(item);
 
             let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine}</span>`;
+            // 显示原有tags (如果有)
             if(item.tags) item.tags.forEach(t => tagsHtml += `<span class="meta-tag">${t}</span>`);
 
             card.innerHTML = `
@@ -452,10 +500,7 @@
             }
         });
 
-        // 已移除步骤渲染逻辑
-
         document.getElementById('btnSearch').onclick = () => {
-            // 切换为 YouTube 搜索
             const query = `${item.name} ${item.blogger} recipe`;
             window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
         };
@@ -466,7 +511,7 @@
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
     function resetFilters() { 
         document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false); 
-        document.getElementById('searchInput').value = ""; // 重置搜索框
+        document.getElementById('searchInput').value = ""; 
         applyFilters(); 
     }
     function helpMeChoose() {
