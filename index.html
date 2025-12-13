@@ -18,153 +18,92 @@
             --blogger-color: #4CAF50;
         }
 
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; line-height: 1.6; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0; 
+            line-height: 1.5;
+            font-size: 14px; /* 全局基础字体调小 */
+        }
         a { text-decoration: none; color: inherit; }
 
-        header { background-color: #000; padding: 25px 20px; text-align: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.7); }
-        h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
-        p.subtitle { color: var(--text-sec); font-size: 0.95rem; margin-top: 8px; }
-        .header-emoji { font-size: 1.5rem; vertical-align: middle; margin-right: 10px; }
+        header { background-color: #000; padding: 15px 20px; text-align: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.7); }
+        h1 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; } /* 标题调小 */
+        p.subtitle { color: var(--text-sec); font-size: 0.85rem; margin-top: 5px; }
+        .header-emoji { font-size: 1.2rem; vertical-align: middle; margin-right: 8px; }
 
-        .filter-container { background-color: #181818; padding: 20px; border-bottom: 1px solid #333; }
-        .filter-group { margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+        .filter-container { background-color: #181818; padding: 15px; border-bottom: 1px solid #333; }
+        .filter-group { margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px; border-bottom: 1px dashed #333; padding-bottom: 8px; }
         .filter-group:last-child { border-bottom: none; }
-        .filter-label { font-weight: bold; color: var(--highlight); min-width: 70px; font-size: 0.95rem; margin-top: 8px; }
-        .filter-options { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; align-items: center; }
+        .filter-label { font-weight: bold; color: var(--highlight); min-width: 60px; font-size: 0.85rem; margin-top: 6px; }
+        .filter-options { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; align-items: center; }
 
-        .search-input { background-color: #333; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; width: 100%; max-width: 300px; font-size: 0.95rem; }
+        .search-input { background-color: #333; border: 1px solid #444; color: #fff; padding: 6px 10px; border-radius: 4px; width: 100%; max-width: 250px; font-size: 0.85rem; }
         .search-input:focus { outline: none; border-color: var(--accent); background-color: #2a2a2a; }
 
         .check-btn { display: none; }
-        .check-label { padding: 4px 10px; background-color: var(--tag-bg); border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; color: #ccc; }
+        .check-label { 
+            padding: 4px 10px; /* 缩小按钮内边距 */
+            background-color: var(--tag-bg); 
+            border-radius: 4px; 
+            font-size: 0.8rem; /* 按钮字体调小 */
+            cursor: pointer; 
+            transition: all 0.2s; 
+            border: 1px solid transparent; 
+            user-select: none; 
+            color: #ccc; 
+        }
         .check-label:hover { background-color: #444; color: #fff; }
         .check-btn:checked + .check-label { background-color: var(--tag-active); color: #121212; border-color: var(--tag-active); font-weight: bold; }
         .check-btn[name="blogger"]:checked + .check-label { background-color: var(--blogger-color); color: white; border-color: var(--blogger-color); }
 
-        .action-bar { display: flex; justify-content: center; gap: 15px; margin-top: 25px; padding-top: 15px; }
-        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: transform 0.2s; }
+        .action-bar { display: flex; justify-content: center; gap: 12px; margin-top: 15px; padding-top: 10px; }
+        button { padding: 8px 18px; border-radius: 5px; border: none; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: transform 0.2s; }
         button.btn-random { background-color: var(--highlight); color: #121212; }
         button.btn-random:hover { transform: scale(1.05); background-color: #ffb74d; }
         button.btn-reset { background-color: transparent; border: 1px solid #666; color: var(--text-sec); }
 
-        .status-bar { text-align: center; padding: 15px; color: var(--text-sec); font-size: 0.85rem; }
+        .status-bar { text-align: center; padding: 10px; color: var(--text-sec); font-size: 0.8rem; }
 
-        /* --- 核心修改区域：网格与卡片尺寸 --- */
-        .movie-grid { 
-            display: grid; 
-            /* 修改为固定列宽 240px，并居中排列 */
-            grid-template-columns: repeat(auto-fill, 240px); 
-            justify-content: center;
-            gap: 20px; 
-            padding: 30px; 
-            max-width: 1400px; 
-            margin: 0 auto; 
-            min-height: 500px;
-        }
+        /* Grid */
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; padding: 20px; max-width: 1400px; margin: 0 auto; min-height: 500px;}
+        .recipe-card { background-color: var(--card-bg); border-radius: 8px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid #333; cursor: pointer; position: relative; }
+        .recipe-card:hover { transform: translateY(-5px); border-color: #555; box-shadow: 0 12px 20px rgba(0,0,0,0.6); }
 
-        .recipe-card { 
-            background-color: var(--card-bg); 
-            border-radius: 12px; 
-            overflow: hidden; 
-            transition: transform 0.3s, box-shadow 0.3s; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
-            display: flex; 
-            flex-direction: column; 
-            border: 1px solid #333; 
-            cursor: pointer; 
-            position: relative;
-            
-            /* 固定宽高 */
-            width: 240px;
-            height: 320px;
-        }
-        .recipe-card:hover { transform: translateY(-5px); border-color: #555; box-shadow: 0 10px 15px rgba(0,0,0,0.6); }
-
-        .blogger-badge { 
-            position: absolute; top: 8px; right: 8px; 
-            background-color: rgba(0,0,0,0.7); 
-            color: var(--blogger-color); 
-            font-size: 0.7rem; /* 字体缩小 */
-            padding: 3px 6px; 
-            border-radius: 4px; 
-            backdrop-filter: blur(4px); 
-            border: 1px solid var(--blogger-color); 
-        }
-
-        .card-header { 
-            padding: 12px; 
-            border-bottom: 1px solid #2a2a2a; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: linear-gradient(to bottom, #252525, #1e1e1e); 
-            margin-top: 15px; 
-            height: 40px; /* 头部固定高度 */
-        }
-
-        .recipe-title { 
-            font-size: 0.95rem; /* 字体缩小 (原1.15) */
-            font-weight: bold; 
-            color: #fff; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            max-width: 140px;
-        }
-        .recipe-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; } /* 字体缩小 */
-
-        .card-body { 
-            padding: 12px; 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-        }
-
-        .tags-row { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px; height: 22px; overflow: hidden; }
-        .meta-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background-color: #333; color: #ccc; } /* 字体缩小 */
+        .blogger-badge { position: absolute; top: 8px; right: 8px; background-color: rgba(0,0,0,0.7); color: var(--blogger-color); font-size: 0.7rem; padding: 3px 6px; border-radius: 3px; backdrop-filter: blur(4px); border: 1px solid var(--blogger-color); }
+        .card-header { padding: 12px; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, #252525, #1e1e1e); margin-top: 15px; }
+        .recipe-title { font-size: 1rem; font-weight: bold; color: #fff; } /* 卡片标题调小 */
+        .recipe-time { font-size: 0.75rem; color: var(--highlight); font-weight: bold; }
+        .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
+        .tags-row { margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+        .meta-tag { font-size: 10px; padding: 2px 6px; border-radius: 3px; background-color: #333; color: #ccc; } /* 标签字体调小 */
         .tag-cuisine { color: #ffab91; border: 1px solid #4e2c25; }
-
-        .ingredient-preview { 
-            font-size: 0.75rem; /* 字体缩小 */
-            color: #888; 
-            margin-bottom: 8px; 
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
-            background: #141414; padding: 6px; border-radius: 6px;
-            height: 36px; /* 固定高度防止抖动 */
-        }
-
-        .desc { 
-            font-size: 0.8rem; /* 字体缩小 (原0.9) */
-            color: #bbb; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 4; /* 显示更多行 */
-            -webkit-box-orient: vertical; 
-            overflow: hidden; 
-            margin-top: auto; 
-            line-height: 1.4;
-        }
+        .ingredient-preview { font-size: 0.8rem; color: #888; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; background: #141414; padding: 6px; border-radius: 4px; }
+        .desc { font-size: 0.85rem; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: auto; }
 
         /* Pagination Styles */
-        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 20px 0 50px 0; }
-        .page-btn { background-color: #333; color: #e0e0e0; border: 1px solid #444; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;}
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 15px 0 40px 0; }
+        .page-btn { background-color: #333; color: #e0e0e0; border: 1px solid #444; padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;}
         .page-btn:hover:not(:disabled) { background-color: var(--accent); color: #121212; border-color: var(--accent); }
         .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .page-info { color: var(--text-sec); font-size: 0.85rem; }
 
-        /* Modal (保持相对较大，方便阅读) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 20px; }
-        .modal-content { background: #222; border-radius: 16px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; border: 1px solid #444; box-shadow: 0 0 40px rgba(255, 159, 28, 0.2); animation: popIn 0.3s ease-out; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 15px; }
+        .modal-content { background: #222; border-radius: 12px; max-width: 550px; width: 100%; max-height: 85vh; overflow-y: auto; border: 1px solid #444; box-shadow: 0 0 40px rgba(255, 159, 28, 0.2); animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { padding: 20px; background: linear-gradient(135deg, #2c1a16 0%, #1a1a1a 100%); border-bottom: 1px solid #333; }
-        .modal-blogger { color: var(--blogger-color); font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 5px; }
-        .modal-title { font-size: 1.5rem; color: var(--highlight); margin: 0; display: inline-block;}
-        .modal-emoji { font-size: 1.8rem; vertical-align: middle; margin-right: 10px; }
-        .modal-body { padding: 25px; }
-        .section-title { color: var(--accent); font-size: 1rem; font-weight: bold; margin: 25px 0 10px 0; border-left: 4px solid var(--accent); padding-left: 10px; }
-        .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+        .modal-header { padding: 15px; background: linear-gradient(135deg, #2c1a16 0%, #1a1a1a 100%); border-bottom: 1px solid #333; }
+        .modal-blogger { color: var(--blogger-color); font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 4px; }
+        .modal-title { font-size: 1.3rem; color: var(--highlight); margin: 0; display: inline-block;} /* 弹窗标题调小 */
+        .modal-emoji { font-size: 1.6rem; vertical-align: middle; margin-right: 8px; }
+        .modal-body { padding: 20px; }
+        .section-title { color: var(--accent); font-size: 1rem; font-weight: bold; margin: 20px 0 8px 0; border-left: 3px solid var(--accent); padding-left: 8px; }
+        .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
         .ing-item { background: #333; padding: 6px; border-radius: 4px; font-size: 0.85rem; text-align: center; border: 1px solid #444; }
-        .modal-actions { padding: 20px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 15px; }
-        .btn-full { flex: 1; }
+        .modal-actions { padding: 15px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 10px; }
+        .btn-full { flex: 1; padding: 10px 0; font-size: 0.9rem;}
         .btn-close { background-color: #333; color: white; }
         .btn-reroll { background-color: var(--highlight); color: #121212; }
         .btn-cook { background-color: #FF0000; color: #fff; } 
@@ -181,7 +120,7 @@
     <div class="filter-group">
         <span class="filter-label">搜索:</span>
         <div class="filter-options">
-            <input type="text" id="searchInput" placeholder="🔍 输入菜名或食材..." class="search-input" oninput="applyFilters()">
+            <input type="text" id="searchInput" placeholder="🔍 搜菜名/食材..." class="search-input" oninput="applyFilters()">
         </div>
     </div>
 
@@ -226,8 +165,8 @@
     </div>
 
     <div class="action-bar">
-        <button class="btn-reset" onclick="resetFilters()">↺ 重置条件</button>
-        <button class="btn-random" onclick="helpMeChoose()">🎲 帮我选一道！</button>
+        <button class="btn-reset" onclick="resetFilters()">↺ 重置</button>
+        <button class="btn-random" onclick="helpMeChoose()">🎲 帮我选</button>
     </div>
 </div>
 
@@ -243,11 +182,11 @@
             <span class="modal-blogger" id="modalBlogger"></span>
             <span class="modal-emoji" id="modalIcon"></span>
             <h2 class="modal-title" id="modalTitle"></h2>
-            <div style="color: #888; margin-top:5px;" id="modalMeta"></div>
+            <div style="color: #888; margin-top:5px; font-size: 0.85rem;" id="modalMeta"></div>
         </div>
         <div class="modal-body">
             <div class="section-title">📝 简介</div>
-            <div style="color:#ccc; line-height:1.5;" id="modalDesc"></div>
+            <div style="color:#ccc; line-height:1.5; font-size: 0.9rem;" id="modalDesc"></div>
             <div class="section-title">🛒 食材清单</div>
             <div class="ingredient-grid" id="modalIngredients"></div>
         </div>
@@ -267,8 +206,8 @@
     let allRecipes = []; 
     let currentList = [];
     
-    // 分页：调整为每页显示 30 个，因为卡片变小了，一页可以多放点
-    const ITEMS_PER_PAGE = 30; 
+    // --- 分页相关变量 ---
+    const ITEMS_PER_PAGE = 24; // 这里修改每页显示的个数
     let currentPage = 1;
 
     window.onload = () => {
@@ -284,7 +223,7 @@
                     allRecipes = results.data.map(row => mapRowToRecipe(row));
                     currentList = [...allRecipes];
                     initDynamicFilters(); 
-                    applyFilters(); 
+                    applyFilters(); // 初始化筛选（这也会触发第一次渲染）
                 } else {
                     statusBar.innerText = "❌ 表格读取为空";
                 }
@@ -312,10 +251,10 @@
     }
 
     function formatDifficulty(d) {
-        if(d == 1) return "⚡ 快手";
+        if(d == 1) return "⚡ 快手菜";
         if(d == 2) return "👨‍🍳 进阶";
-        if(d == 3) return "🔥 功夫";
-        return "未知";
+        if(d == 3) return "🔥 功夫菜";
+        return "未知难度";
     }
 
     function initDynamicFilters() {
@@ -342,6 +281,7 @@
         return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
     }
 
+    // --- 筛选逻辑 ---
     function applyFilters() {
         const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
         const selCuisines = getSelectedValues('cuisine');
@@ -364,6 +304,7 @@
         renderPage();
     }
 
+    // --- 分页渲染逻辑 ---
     function renderPage() {
         const totalItems = currentList.length;
         updateStatusBar(totalItems);
@@ -391,17 +332,16 @@
         const container = document.getElementById('pagination');
         container.innerHTML = "";
         
-        if (totalItems <= ITEMS_PER_PAGE) return; 
+        if (totalItems <= ITEMS_PER_PAGE) return;
 
         const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-
         const prevDisabled = currentPage === 1 ? 'disabled' : '';
         const nextDisabled = currentPage === totalPages ? 'disabled' : '';
 
         container.innerHTML = `
-            <button class="page-btn" onclick="changePage(-1)" ${prevDisabled}>◀ 上一页</button>
-            <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
-            <button class="page-btn" onclick="changePage(1)" ${nextDisabled}>下一页 ▶</button>
+            <button class="page-btn" onclick="changePage(-1)" ${prevDisabled}>◀</button>
+            <span class="page-info">${currentPage} / ${totalPages}</span>
+            <button class="page-btn" onclick="changePage(1)" ${nextDisabled}>▶</button>
         `;
     }
 
