@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>今天吃什么</title>
+    <title>悉尼今天吃什么</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         :root {
@@ -26,7 +26,6 @@
         p.subtitle { color: var(--text-sec); font-size: 0.95rem; margin-top: 8px; }
         .header-emoji { font-size: 1.5rem; vertical-align: middle; margin-right: 10px; }
 
-        /* Filter Section */
         .filter-container { background-color: #181818; padding: 20px; border-bottom: 1px solid #333; }
         .filter-group { margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
         .filter-group:last-child { border-bottom: none; }
@@ -50,7 +49,7 @@
 
         .status-bar { text-align: center; padding: 15px; color: var(--text-sec); font-size: 0.9rem; }
 
-        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px; max-width: 1400px; margin: 0 auto; min-height: 500px;}
         .recipe-card { background-color: var(--card-bg); border-radius: 12px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid #333; cursor: pointer; position: relative; }
         .recipe-card:hover { transform: translateY(-8px); border-color: #555; box-shadow: 0 12px 20px rgba(0,0,0,0.6); }
 
@@ -64,6 +63,13 @@
         .tag-cuisine { color: #ffab91; border: 1px solid #4e2c25; }
         .ingredient-preview { font-size: 0.85rem; color: #888; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; background: #141414; padding: 8px; border-radius: 6px; }
         .desc { font-size: 0.9rem; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: auto; }
+
+        /* Pagination Styles */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 15px; padding: 20px 0 50px 0; }
+        .page-btn { background-color: #333; color: #e0e0e0; border: 1px solid #444; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .page-btn:hover:not(:disabled) { background-color: var(--accent); color: #121212; border-color: var(--accent); }
+        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .page-info { color: var(--text-sec); font-size: 0.9rem; }
 
         /* Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 20px; }
@@ -87,8 +93,8 @@
 <body>
 
 <header>
-    <h1><span class="header-emoji">🍳</span>今天吃什么</h1>
-    <p class="subtitle">Google Sheet 驱动版</p>
+    <h1><span class="header-emoji">🍳</span>悉尼今天吃什么</h1>
+    <p class="subtitle">SYDNEY FOOD FINDER</p>
 </header>
 
 <div class="filter-container">
@@ -146,7 +152,10 @@
 </div>
 
 <div class="status-bar" id="statusBar">加载中...</div>
+
 <div class="movie-grid" id="recipeGrid"></div>
+
+<div class="pagination" id="pagination"></div>
 
 <div class="modal-overlay" id="modal">
     <div class="modal-content">
@@ -171,16 +180,16 @@
 </div>
 
 <script>
-    // 你的 Google Sheet CSV 发布链接
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3yP3rYyB9wX0H6B7k3C2yXW5_V5z5f5h5j5k5l5m5n5o5p5q/pub?output=csv';
-    // 注意：如果你上面的链接不对，请务必使用：文件 -> 分享 -> 发布到网页 -> 选择 "csv" 格式生成的链接
-    // 为了演示，我这里构建一个基于你 ID 的通用 CSV 代理链接（如果直接发布不成功，请手动替换回你的发布链接）
-    // 下面这个 ID 是从你链接提取的: 1uaPDvMd0u_KcQ8x7qmZWMl6dXGcTuo9G5wHXTalONp8
+    // 你的 Google Sheet 代理链接
     const DOC_ID = '1uaPDvMd0u_KcQ8x7qmZWMl6dXGcTuo9G5wHXTalONp8';
     const CSV_URL = `https://docs.google.com/spreadsheets/d/${DOC_ID}/export?format=csv`;
 
     let allRecipes = []; 
     let currentList = [];
+    
+    // --- 分页相关变量 ---
+    const ITEMS_PER_PAGE = 96; // 这里修改每页显示的个数
+    let currentPage = 1;
 
     window.onload = () => {
         const statusBar = document.getElementById('statusBar');
@@ -192,40 +201,33 @@
             skipEmptyLines: true, 
             complete: function(results) {
                 if (results.data && results.data.length > 0) {
-                    console.log("Raw Data:", results.data); // 调试用
-                    
-                    // 数据清洗与映射：把 Sheet 的列名对应到程序的字段名
                     allRecipes = results.data.map(row => mapRowToRecipe(row));
-
                     currentList = [...allRecipes];
                     initDynamicFilters(); 
-                    applyFilters();
-                    
-                    statusBar.innerText = `✅ 加载完成，共有 ${allRecipes.length} 道菜`;
+                    applyFilters(); // 初始化筛选（这也会触发第一次渲染）
                 } else {
-                    statusBar.innerText = "❌ 表格读取为空，请检查权限是否为'知道链接的任何人'";
+                    statusBar.innerText = "❌ 表格读取为空";
                 }
             },
             error: function(err) {
                 console.error(err);
-                statusBar.innerText = "❌ 加载失败，请确保表格已开启共享权限";
+                statusBar.innerText = "❌ 加载失败，请检查网络";
             }
         });
     };
 
-    // 核心函数：把表格不规范的列名转换成程序统一的格式
     function mapRowToRecipe(row) {
         return {
             id: row.id,
             name: row.name || '未命名菜谱',
-            blogger: row.vlogger || row.blogger || '未知UP主', // 映射 vlogger
-            desc: row.description || row.desc || '暂无简介', // 映射 description
+            blogger: row.vlogger || row.blogger || '未知UP主',
+            desc: row.description || row.desc || '暂无简介',
             cuisine: row.cuisine || '综合',
-            ingredients: row.ingredient || row.ingredients || '', // 映射 ingredient
-            difficulty: row.difficulty || '1', // 难度等级
-            type: row.category || '热菜', // 映射 category
-            icon: '🥘', // 默认图标，因为你的表格好像没有 icon 列
-            time: formatDifficulty(row.difficulty) // 把数字难度转成文字描述显示
+            ingredients: row.ingredient || row.ingredients || '',
+            difficulty: row.difficulty || '1',
+            type: row.category || '热菜',
+            icon: '🥘',
+            time: formatDifficulty(row.difficulty)
         };
     }
 
@@ -237,11 +239,8 @@
     }
 
     function initDynamicFilters() {
-        // 生成菜系
         const cuisines = [...new Set(allRecipes.map(r => r.cuisine).filter(c => c))];
         generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
-
-        // 生成博主
         const bloggers = [...new Set(allRecipes.map(r => r.blogger).filter(b => b))];
         generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
     }
@@ -252,11 +251,10 @@
         values.forEach((val, index) => {
             const id = `${name}-${index}`;
             const labelText = name === 'blogger' ? `👨‍🍳 ${val}` : val;
-            const html = `
+            container.innerHTML += `
                 <input type="checkbox" id="${id}" name="${name}" value="${val}" class="check-btn" onchange="applyFilters()">
                 <label for="${id}" class="check-label">${labelText}</label>
             `;
-            container.innerHTML += html;
         });
     }
 
@@ -264,6 +262,7 @@
         return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value);
     }
 
+    // --- 筛选逻辑 ---
     function applyFilters() {
         const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
         const selCuisines = getSelectedValues('cuisine');
@@ -272,26 +271,65 @@
         const selDifficulty = getSelectedValues('difficulty');
 
         currentList = allRecipes.filter(item => {
-            // 文本搜索
             const textMatch = !searchText || 
                               (item.name && item.name.toLowerCase().includes(searchText)) || 
                               (item.ingredients && item.ingredients.toLowerCase().includes(searchText));
-
-            // 菜系 & 博主
             const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
             const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
-            
-            // 食材筛选 (只要包含其中一个字即可)
             const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients && item.ingredients.includes(selIng));
-
-            // 难度筛选 (完全匹配数字 1, 2, 3)
             const diffMatch = selDifficulty.length === 0 || selDifficulty.includes(item.difficulty);
-
             return textMatch && cuisineMatch && bloggerMatch && ingMatch && diffMatch;
         });
 
-        updateStatusBar(currentList.length);
-        renderRecipes(currentList);
+        // 关键点：筛选条件改变时，重置回第一页
+        currentPage = 1;
+        renderPage();
+    }
+
+    // --- 新增：分页渲染逻辑 ---
+    function renderPage() {
+        // 更新状态栏
+        const totalItems = currentList.length;
+        updateStatusBar(totalItems);
+
+        // 计算当前页面的数据切片
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        const pageItems = currentList.slice(startIndex, endIndex);
+
+        // 渲染列表和分页按钮
+        renderRecipes(pageItems);
+        renderPagination(totalItems);
+    }
+
+    function changePage(delta) {
+        const totalPages = Math.ceil(currentList.length / ITEMS_PER_PAGE);
+        const newPage = currentPage + delta;
+        
+        if (newPage >= 1 && newPage <= totalPages) {
+            currentPage = newPage;
+            renderPage();
+            // 翻页后滚动到 Grid 顶部，提升体验
+            document.querySelector('.filter-container').scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    function renderPagination(totalItems) {
+        const container = document.getElementById('pagination');
+        container.innerHTML = "";
+        
+        if (totalItems <= ITEMS_PER_PAGE) return; // 如果一页能装下，不显示分页
+
+        const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+        const prevDisabled = currentPage === 1 ? 'disabled' : '';
+        const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+
+        container.innerHTML = `
+            <button class="page-btn" onclick="changePage(-1)" ${prevDisabled}>◀ 上一页</button>
+            <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
+            <button class="page-btn" onclick="changePage(1)" ${nextDisabled}>下一页 ▶</button>
+        `;
     }
 
     function updateStatusBar(count) {
@@ -313,7 +351,6 @@
             const card = document.createElement('div');
             card.className = 'recipe-card';
             card.onclick = () => showDetails(item);
-
             card.innerHTML = `
                 <div class="blogger-badge">👨‍🍳 ${item.blogger}</div>
                 <div class="card-header">
@@ -337,11 +374,9 @@
         document.getElementById('modalBlogger').innerText = `UP主：${item.blogger}`;
         document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type} | 难度:${item.difficulty}`;
         document.getElementById('modalDesc').innerText = item.desc;
-
         const ingBox = document.getElementById('modalIngredients');
         ingBox.innerHTML = '';
         if(item.ingredients) {
-            // 兼容中文逗号和英文逗号
             const ings = item.ingredients.split(/[,，]/);
             ings.forEach(ing => {
                 if(ing.trim()){
@@ -352,12 +387,10 @@
                 }
             });
         }
-
         document.getElementById('btnSearch').onclick = () => {
             const query = `${item.name} ${item.blogger} 做法`;
             window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
         };
-
         modal.style.display = 'flex';
     }
 
@@ -371,6 +404,7 @@
     
     function helpMeChoose() {
         if(currentList.length === 0) { alert('列表为空，无法随机'); return; }
+        // 注意：随机是在“当前筛选的所有结果”里随机，而不是只在“当前页”随机，这样体验更好
         const r = currentList[Math.floor(Math.random() * currentList.length)];
         showDetails(r);
     }
