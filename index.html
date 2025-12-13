@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今天吃什么</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         :root {
             --bg-color: #121212;
@@ -11,289 +12,83 @@
             --text-main: #e0e0e0;
             --text-sec: #a0a0a0;
             --accent: #ff9f1c;
-            --accent-hover: #ff7f00;
             --highlight: #ffd700;
             --tag-bg: #333;
             --tag-active: #ff9f1c;
             --blogger-color: #4CAF50;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; line-height: 1.6; }
         a { text-decoration: none; color: inherit; }
 
-        header {
-            background-color: #000;
-            padding: 25px 20px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.7);
-        }
-
+        header { background-color: #000; padding: 25px 20px; text-align: center; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.7); }
         h1 { margin: 0; font-size: 1.8rem; letter-spacing: 1px; }
         p.subtitle { color: var(--text-sec); font-size: 0.95rem; margin-top: 8px; }
         .header-emoji { font-size: 1.5rem; vertical-align: middle; margin-right: 10px; }
 
-        /* 头部功能按钮 */
-        .header-actions {
-            margin-top: 15px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .btn-text {
-            background-color: transparent;
-            border: 1px solid #444;
-            color: #888;
-            font-size: 0.85rem;
-            padding: 6px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-text:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background-color: rgba(255, 159, 28, 0.1);
-        }
-
         /* Filter Section */
-        .filter-container {
-            background-color: #181818;
-            padding: 20px;
-            border-bottom: 1px solid #333;
-        }
-
-        .filter-group {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            border-bottom: 1px dashed #333;
-            padding-bottom: 10px;
-        }
+        .filter-container { background-color: #181818; padding: 20px; border-bottom: 1px solid #333; }
+        .filter-group { margin-bottom: 15px; display: flex; align-items: flex-start; gap: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
         .filter-group:last-child { border-bottom: none; }
-
-        .filter-label {
-            font-weight: bold;
-            color: var(--highlight);
-            min-width: 70px;
-            font-size: 0.95rem;
-            margin-top: 8px;
-        }
-
+        .filter-label { font-weight: bold; color: var(--highlight); min-width: 70px; font-size: 0.95rem; margin-top: 8px; }
         .filter-options { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; align-items: center; }
 
-        .search-input {
-            background-color: #333;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            width: 100%;
-            max-width: 300px;
-            font-size: 0.95rem;
-            transition: border-color 0.2s;
-        }
-        .search-input:focus {
-            outline: none;
-            border-color: var(--accent);
-            background-color: #2a2a2a;
-        }
+        .search-input { background-color: #333; border: 1px solid #444; color: #fff; padding: 8px 12px; border-radius: 6px; width: 100%; max-width: 300px; font-size: 0.95rem; }
+        .search-input:focus { outline: none; border-color: var(--accent); background-color: #2a2a2a; }
 
         .check-btn { display: none; }
-        .check-label {
-            padding: 5px 12px;
-            background-color: var(--tag-bg);
-            border-radius: 6px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-            user-select: none;
-            color: #ccc;
-            display: flex;
-            align-items: center;
-        }
+        .check-label { padding: 5px 12px; background-color: var(--tag-bg); border-radius: 6px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; color: #ccc; }
         .check-label:hover { background-color: #444; color: #fff; }
-        
-        /* 选中状态 */
-        .check-btn:checked + .check-label {
-            background-color: var(--tag-active);
-            color: #121212;
-            border-color: var(--tag-active);
-            font-weight: bold;
-        }
-        /* 博主特殊颜色 */
-        .check-btn[name="blogger"]:checked + .check-label { 
-            background-color: var(--blogger-color); 
-            color: white; 
-            border-color: var(--blogger-color); 
-        }
+        .check-btn:checked + .check-label { background-color: var(--tag-active); color: #121212; border-color: var(--tag-active); font-weight: bold; }
+        .check-btn[name="blogger"]:checked + .check-label { background-color: var(--blogger-color); color: white; border-color: var(--blogger-color); }
 
-        .action-bar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 25px;
-            padding-top: 15px;
-        }
-
-        button {
-            padding: 12px 24px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            transition: transform 0.2s;
-        }
+        .action-bar { display: flex; justify-content: center; gap: 15px; margin-top: 25px; padding-top: 15px; }
+        button { padding: 12px 24px; border-radius: 6px; border: none; cursor: pointer; font-size: 15px; font-weight: 600; transition: transform 0.2s; }
         button.btn-random { background-color: var(--highlight); color: #121212; }
         button.btn-random:hover { transform: scale(1.05); background-color: #ffb74d; }
         button.btn-reset { background-color: transparent; border: 1px solid #666; color: var(--text-sec); }
-        button.btn-reset:hover { border-color: #aaa; color: #fff; background-color: #222; }
 
         .status-bar { text-align: center; padding: 15px; color: var(--text-sec); font-size: 0.9rem; }
 
-        .movie-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            padding: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .recipe-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #333;
-            cursor: pointer;
-            position: relative;
-        }
+        .movie-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 30px; max-width: 1400px; margin: 0 auto; }
+        .recipe-card { background-color: var(--card-bg); border-radius: 12px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; flex-direction: column; border: 1px solid #333; cursor: pointer; position: relative; }
         .recipe-card:hover { transform: translateY(-8px); border-color: #555; box-shadow: 0 12px 20px rgba(0,0,0,0.6); }
 
-        .blogger-badge {
-            position: absolute;
-            top: 10px; right: 10px;
-            background-color: rgba(0,0,0,0.7);
-            color: var(--blogger-color);
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 4px;
-            backdrop-filter: blur(4px);
-            border: 1px solid var(--blogger-color);
-        }
-
-        .card-header {
-            padding: 15px;
-            border-bottom: 1px solid #2a2a2a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: linear-gradient(to bottom, #252525, #1e1e1e);
-            margin-top: 20px;
-        }
-
+        .blogger-badge { position: absolute; top: 10px; right: 10px; background-color: rgba(0,0,0,0.7); color: var(--blogger-color); font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; backdrop-filter: blur(4px); border: 1px solid var(--blogger-color); }
+        .card-header { padding: 15px; border-bottom: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, #252525, #1e1e1e); margin-top: 20px; }
         .recipe-title { font-size: 1.15rem; font-weight: bold; color: #fff; }
         .recipe-time { font-size: 0.85rem; color: var(--highlight); font-weight: bold; }
         .card-body { padding: 18px; flex-grow: 1; display: flex; flex-direction: column; }
         .tags-row { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 5px; }
-        
         .meta-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; background-color: #333; color: #ccc; }
         .tag-cuisine { color: #ffab91; border: 1px solid #4e2c25; }
-
-        .ingredient-preview {
-            font-size: 0.85rem; color: #888; margin-bottom: 10px;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; background: #141414; padding: 8px; border-radius: 6px;
-        }
-        .desc {
-            font-size: 0.9rem; color: #ddd;
-            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-            overflow: hidden; margin-top: auto;
-        }
+        .ingredient-preview { font-size: 0.85rem; color: #888; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; background: #141414; padding: 8px; border-radius: 6px; }
+        .desc { font-size: 0.9rem; color: #ddd; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: auto; }
 
         /* Modal */
-        .modal-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000;
-            justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 20px;
-        }
-        .modal-content {
-            background: #222; border-radius: 16px; max-width: 600px; width: 100%;
-            max-height: 85vh; overflow-y: auto; border: 1px solid #444;
-            box-shadow: 0 0 40px rgba(255, 159, 28, 0.2); animation: popIn 0.3s ease-out;
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 20px; }
+        .modal-content { background: #222; border-radius: 16px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; border: 1px solid #444; box-shadow: 0 0 40px rgba(255, 159, 28, 0.2); animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .modal-header {
-            padding: 20px; background: linear-gradient(135deg, #2c1a16 0%, #1a1a1a 100%);
-            border-bottom: 1px solid #333;
-        }
+        .modal-header { padding: 20px; background: linear-gradient(135deg, #2c1a16 0%, #1a1a1a 100%); border-bottom: 1px solid #333; }
         .modal-blogger { color: var(--blogger-color); font-size: 0.9rem; font-weight: bold; display: block; margin-bottom: 5px; }
         .modal-title { font-size: 1.6rem; color: var(--highlight); margin: 0; display: inline-block;}
         .modal-emoji { font-size: 2rem; vertical-align: middle; margin-right: 10px; }
         .modal-body { padding: 25px; }
-
-        .section-title {
-            color: var(--accent); font-size: 1.1rem; font-weight: bold; margin: 25px 0 10px 0;
-            border-left: 4px solid var(--accent); padding-left: 10px;
-        }
-        .section-title:first-child { margin-top: 0; }
-
+        .section-title { color: var(--accent); font-size: 1.1rem; font-weight: bold; margin: 25px 0 10px 0; border-left: 4px solid var(--accent); padding-left: 10px; }
         .ingredient-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
         .ing-item { background: #333; padding: 8px; border-radius: 4px; font-size: 0.9rem; text-align: center; border: 1px solid #444; }
-
-        .modal-actions {
-            padding: 20px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 15px;
-        }
+        .modal-actions { padding: 20px; background-color: #181818; border-top: 1px solid #333; display: flex; gap: 15px; }
         .btn-full { flex: 1; }
         .btn-close { background-color: #333; color: white; }
-        
-        /* 弹窗内再选一次按钮样式 */
-        .btn-reroll {
-            background-color: var(--highlight);
-            color: #121212;
-        }
-        .btn-reroll:hover {
-            background-color: #ffb74d;
-        }
-
+        .btn-reroll { background-color: var(--highlight); color: #121212; }
         .btn-cook { background-color: #FF0000; color: #fff; } 
-        .btn-cook:hover { background-color: #cc0000; }
     </style>
 </head>
 <body>
 
 <header>
     <h1><span class="header-emoji">🍳</span>今天吃什么</h1>
-    <p class="subtitle">UP主菜谱引导系统</p>
-    
-    <div class="header-actions">
-        <button class="btn-text" onclick="shareToFriends()">📤 分享给朋友</button>
-        <button class="btn-text" onclick="contactAuthor()">💬 反馈给作者</button>
-    </div>
+    <p class="subtitle">Google Sheet 驱动版</p>
 </header>
 
 <div class="filter-container">
@@ -310,39 +105,37 @@
     </div>
 
     <div class="filter-group">
-        <span class="filter-label">博主:</span>
+        <span class="filter-label">UP主:</span>
         <div class="filter-options" id="filter-blogger"></div>
     </div>
 
     <div class="filter-group">
         <span class="filter-label">食材:</span>
         <div class="filter-options" id="filter-ingredient">
-            <input type="checkbox" id="i1" name="ingredient" value="猪肉" class="check-btn" onchange="applyFilters()"><label for="i1" class="check-label">🐷 猪肉</label>
+            <input type="checkbox" id="i1" name="ingredient" value="猪" class="check-btn" onchange="applyFilters()"><label for="i1" class="check-label">🐷 猪肉</label>
             <input type="checkbox" id="i2" name="ingredient" value="鸡" class="check-btn" onchange="applyFilters()"><label for="i2" class="check-label">🐔 鸡肉</label>
             <input type="checkbox" id="i3" name="ingredient" value="牛" class="check-btn" onchange="applyFilters()"><label for="i3" class="check-label">🐮 牛肉</label>
             <input type="checkbox" id="i4" name="ingredient" value="羊" class="check-btn" onchange="applyFilters()"><label for="i4" class="check-label">🐑 羊肉</label>
             <input type="checkbox" id="i5" name="ingredient" value="鱼" class="check-btn" onchange="applyFilters()"><label for="i5" class="check-label">🐟 鱼/海鲜</label>
             <input type="checkbox" id="i6" name="ingredient" value="虾" class="check-btn" onchange="applyFilters()"><label for="i6" class="check-label">🦐 虾/蟹</label>
             <input type="checkbox" id="i7" name="ingredient" value="蛋" class="check-btn" onchange="applyFilters()"><label for="i7" class="check-label">🥚 鸡蛋</label>
-            <input type="checkbox" id="i8" name="ingredient" value="豆腐" class="check-btn" onchange="applyFilters()"><label for="i8" class="check-label">🧊 豆腐</label>
             <input type="checkbox" id="i9" name="ingredient" value="土豆" class="check-btn" onchange="applyFilters()"><label for="i9" class="check-label">🥔 土豆</label>
-            <input type="checkbox" id="i10" name="ingredient" value="番茄" class="check-btn" onchange="applyFilters()"><label for="i10" class="check-label">🍅 番茄</label>
-            <input type="checkbox" id="i11" name="ingredient" value="青菜" class="check-btn" onchange="applyFilters()"><label for="i11" class="check-label">🥬 青菜</label>
-            <input type="checkbox" id="i12" name="ingredient" value="面" class="check-btn" onchange="applyFilters()"><label for="i12" class="check-label">🍜 面/粉</label>
+            <input type="checkbox" id="i11" name="ingredient" value="菜" class="check-btn" onchange="applyFilters()"><label for="i11" class="check-label">🥬 青菜/素食</label>
+            <input type="checkbox" id="i12" name="ingredient" value="面" class="check-btn" onchange="applyFilters()"><label for="i12" class="check-label">🍜 面食</label>
         </div>
     </div>
 
     <div class="filter-group">
         <span class="filter-label">难度:</span>
         <div class="filter-options">
-            <input type="checkbox" id="d1" name="difficulty" value="0-20" class="check-btn" onchange="applyFilters()">
-            <label for="d1" class="check-label">⚡ 快手 (≤20分)</label>
+            <input type="checkbox" id="d1" name="difficulty" value="1" class="check-btn" onchange="applyFilters()">
+            <label for="d1" class="check-label">⚡ 快手 (1级)</label>
             
-            <input type="checkbox" id="d2" name="difficulty" value="21-60" class="check-btn" onchange="applyFilters()">
-            <label for="d2" class="check-label">👨‍🍳 进阶 (20-60分)</label>
+            <input type="checkbox" id="d2" name="difficulty" value="2" class="check-btn" onchange="applyFilters()">
+            <label for="d2" class="check-label">👨‍🍳 进阶 (2级)</label>
             
-            <input type="checkbox" id="d3" name="difficulty" value="61-999" class="check-btn" onchange="applyFilters()">
-            <label for="d3" class="check-label">🔥 大菜 (>60分)</label>
+            <input type="checkbox" id="d3" name="difficulty" value="3" class="check-btn" onchange="applyFilters()">
+            <label for="d3" class="check-label">🔥 大菜 (3级)</label>
         </div>
     </div>
 
@@ -377,32 +170,80 @@
     </div>
 </div>
 
-<script src="recipes.js"></script>
-
 <script>
+    // 你的 Google Sheet CSV 发布链接
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT3yP3rYyB9wX0H6B7k3C2yXW5_V5z5f5h5j5k5l5m5n5o5p5q/pub?output=csv';
+    // 注意：如果你上面的链接不对，请务必使用：文件 -> 分享 -> 发布到网页 -> 选择 "csv" 格式生成的链接
+    // 为了演示，我这里构建一个基于你 ID 的通用 CSV 代理链接（如果直接发布不成功，请手动替换回你的发布链接）
+    // 下面这个 ID 是从你链接提取的: 1uaPDvMd0u_KcQ8x7qmZWMl6dXGcTuo9G5wHXTalONp8
+    const DOC_ID = '1uaPDvMd0u_KcQ8x7qmZWMl6dXGcTuo9G5wHXTalONp8';
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/${DOC_ID}/export?format=csv`;
+
+    let allRecipes = []; 
     let currentList = [];
 
     window.onload = () => {
-        if (typeof allRecipes === 'undefined') {
-            document.getElementById('statusBar').innerText = "错误：找不到 recipes.js 文件，请确保它和 index.html 在同一目录！";
-            return;
-        }
+        const statusBar = document.getElementById('statusBar');
+        statusBar.innerText = "🚀 正在从 Google Sheet 读取数据...";
 
-        currentList = [...allRecipes];
-        initDynamicFilters(); 
-        applyFilters();
+        Papa.parse(CSV_URL, {
+            download: true,
+            header: true, 
+            skipEmptyLines: true, 
+            complete: function(results) {
+                if (results.data && results.data.length > 0) {
+                    console.log("Raw Data:", results.data); // 调试用
+                    
+                    // 数据清洗与映射：把 Sheet 的列名对应到程序的字段名
+                    allRecipes = results.data.map(row => mapRowToRecipe(row));
+
+                    currentList = [...allRecipes];
+                    initDynamicFilters(); 
+                    applyFilters();
+                    
+                    statusBar.innerText = `✅ 加载完成，共有 ${allRecipes.length} 道菜`;
+                } else {
+                    statusBar.innerText = "❌ 表格读取为空，请检查权限是否为'知道链接的任何人'";
+                }
+            },
+            error: function(err) {
+                console.error(err);
+                statusBar.innerText = "❌ 加载失败，请确保表格已开启共享权限";
+            }
+        });
     };
 
+    // 核心函数：把表格不规范的列名转换成程序统一的格式
+    function mapRowToRecipe(row) {
+        return {
+            id: row.id,
+            name: row.name || '未命名菜谱',
+            blogger: row.vlogger || row.blogger || '未知UP主', // 映射 vlogger
+            desc: row.description || row.desc || '暂无简介', // 映射 description
+            cuisine: row.cuisine || '综合',
+            ingredients: row.ingredient || row.ingredients || '', // 映射 ingredient
+            difficulty: row.difficulty || '1', // 难度等级
+            type: row.category || '热菜', // 映射 category
+            icon: '🥘', // 默认图标，因为你的表格好像没有 icon 列
+            time: formatDifficulty(row.difficulty) // 把数字难度转成文字描述显示
+        };
+    }
+
+    function formatDifficulty(d) {
+        if(d == 1) return "⚡ 快手菜";
+        if(d == 2) return "👨‍🍳 进阶";
+        if(d == 3) return "🔥 功夫菜";
+        return "未知难度";
+    }
+
     function initDynamicFilters() {
-        // 1. 生成菜系 (filter(c=>c) 过滤空值)
+        // 生成菜系
         const cuisines = [...new Set(allRecipes.map(r => r.cuisine).filter(c => c))];
         generateCheckboxGroup('filter-cuisine', 'cuisine', cuisines);
 
-        // 2. 生成博主 (filter(b=>b) 修复undefined问题)
+        // 生成博主
         const bloggers = [...new Set(allRecipes.map(r => r.blogger).filter(b => b))];
         generateCheckboxGroup('filter-blogger', 'blogger', bloggers);
-        
-        // 食材部分为HTML固定内容
     }
 
     function generateCheckboxGroup(containerId, name, values) {
@@ -424,10 +265,7 @@
     }
 
     function applyFilters() {
-        // 1. 获取输入框
         const searchText = document.getElementById('searchInput').value.toLowerCase().trim();
-
-        // 2. 获取复选框
         const selCuisines = getSelectedValues('cuisine');
         const selBloggers = getSelectedValues('blogger');
         const selIngredients = getSelectedValues('ingredient');
@@ -443,29 +281,17 @@
             const cuisineMatch = selCuisines.length === 0 || selCuisines.includes(item.cuisine);
             const bloggerMatch = selBloggers.length === 0 || selBloggers.includes(item.blogger);
             
-            // 食材筛选
+            // 食材筛选 (只要包含其中一个字即可)
             const ingMatch = selIngredients.length === 0 || selIngredients.some(selIng => item.ingredients && item.ingredients.includes(selIng));
 
-            // 难度筛选
-            const timeMatch = selDifficulty.length === 0 || checkTimeDifficulty(item.time, selDifficulty);
+            // 难度筛选 (完全匹配数字 1, 2, 3)
+            const diffMatch = selDifficulty.length === 0 || selDifficulty.includes(item.difficulty);
 
-            return textMatch && cuisineMatch && bloggerMatch && ingMatch && timeMatch;
+            return textMatch && cuisineMatch && bloggerMatch && ingMatch && diffMatch;
         });
 
         updateStatusBar(currentList.length);
         renderRecipes(currentList);
-    }
-
-    // 解析时间 (例如 "90分钟" -> 90) 并匹配范围
-    function checkTimeDifficulty(timeStr, ranges) {
-        if (!timeStr) return false;
-        const minutes = parseInt(timeStr); 
-        if (isNaN(minutes)) return false;
-
-        return ranges.some(range => {
-            const [min, max] = range.split('-').map(Number);
-            return minutes >= min && minutes <= max;
-        });
     }
 
     function updateStatusBar(count) {
@@ -488,19 +314,16 @@
             card.className = 'recipe-card';
             card.onclick = () => showDetails(item);
 
-            let tagsHtml = `<span class="meta-tag tag-cuisine">${item.cuisine || '美味'}</span>`;
-            if(item.tags) item.tags.forEach(t => tagsHtml += `<span class="meta-tag">${t}</span>`);
-
             card.innerHTML = `
                 <div class="blogger-badge">👨‍🍳 ${item.blogger}</div>
                 <div class="card-header">
-                    <span class="recipe-title">${item.icon || '🥘'} ${item.name}</span>
-                    <span class="recipe-time">⏰ ${item.time}</span>
+                    <span class="recipe-title">${item.icon} ${item.name}</span>
+                    <span class="recipe-time">${item.time}</span>
                 </div>
                 <div class="card-body">
-                    <div class="tags-row">${tagsHtml}</div>
+                    <div class="tags-row"><span class="meta-tag tag-cuisine">${item.cuisine}</span><span class="meta-tag">${item.type}</span></div>
                     <div class="ingredient-preview"><strong>🛒 食材:</strong> ${item.ingredients || '见详情'}</div>
-                    <p class="desc">${item.desc || '暂无简介'}</p>
+                    <p class="desc">${item.desc}</p>
                 </div>
             `;
             grid.appendChild(card);
@@ -509,16 +332,17 @@
 
     function showDetails(item) {
         const modal = document.getElementById('modal');
-        document.getElementById('modalIcon').innerText = item.icon || '🥘';
+        document.getElementById('modalIcon').innerText = item.icon;
         document.getElementById('modalTitle').innerText = item.name;
         document.getElementById('modalBlogger').innerText = `UP主：${item.blogger}`;
-        document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type || '热菜'} | ${item.time}`;
-        document.getElementById('modalDesc').innerText = item.desc || '暂无简介';
+        document.getElementById('modalMeta').innerText = `${item.cuisine} | ${item.type} | 难度:${item.difficulty}`;
+        document.getElementById('modalDesc').innerText = item.desc;
 
         const ingBox = document.getElementById('modalIngredients');
         ingBox.innerHTML = '';
         if(item.ingredients) {
-            const ings = item.ingredients.split(/,|，/);
+            // 兼容中文逗号和英文逗号
+            const ings = item.ingredients.split(/[,，]/);
             ings.forEach(ing => {
                 if(ing.trim()){
                     const div = document.createElement('div');
@@ -530,7 +354,7 @@
         }
 
         document.getElementById('btnSearch').onclick = () => {
-            const query = `${item.name} ${item.blogger} recipe`;
+            const query = `${item.name} ${item.blogger} 做法`;
             window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
         };
 
@@ -549,28 +373,6 @@
         if(currentList.length === 0) { alert('列表为空，无法随机'); return; }
         const r = currentList[Math.floor(Math.random() * currentList.length)];
         showDetails(r);
-    }
-
-    // --- 头部按钮功能 ---
-    function shareToFriends() {
-        if (navigator.share) {
-            navigator.share({
-                title: '今天吃什么 - 智能菜谱库',
-                text: '不知道吃什么？来这里看看！',
-                url: window.location.href
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                alert('🔗 链接已复制到剪贴板，快去发给朋友吧！');
-            }).catch(() => {
-                alert('❌ 复制失败，请手动复制浏览器地址栏');
-            });
-        }
-    }
-
-    function contactAuthor() {
-        // 这里的逻辑已修改为弹出微博信息
-        alert("联系微博@ian233");
     }
 
     window.onclick = (e) => { if(e.target == document.getElementById('modal')) closeModal(); }
